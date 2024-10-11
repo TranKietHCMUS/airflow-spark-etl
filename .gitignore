@@ -1,0 +1,5 @@
+logs
+dags/__pycache__
+dags/tasks/__pycache__
+aws_connection.json
+.env
