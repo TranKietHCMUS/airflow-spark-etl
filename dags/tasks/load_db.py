@@ -6,6 +6,10 @@ from pyspark.sql import SparkSession
 args = sys.argv
 aws_access_key_id = args[1]
 aws_secret_access_key = args[2]
+postgres_user = args[3]
+postgres_password = args[4]
+postgres_db = args[5]
+goldenzone_bucker_name = args[6]
 
 spark = SparkSession.builder.appName("AirflowSparkJob")\
         .config("spark.hadoop.fs.s3a.access.key", aws_access_key_id) \
@@ -23,12 +27,12 @@ logger.info('Spark Version :'+spark.version)
 ho_chi_minh_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 today = datetime.datetime.now(ho_chi_minh_tz)
 
-goldenzone_prefix = f"s3a://golden-zone-cdp/{today.year}/{today.month}/{today.day}"
+goldenzone_prefix = f"s3a://{goldenzone_bucker_name}/{today.year}/{today.month}/{today.day}"
 
-db_url = "jdbc:postgresql://postgres:5432/airflow"
+db_url = f"jdbc:postgresql://postgres:5432/{postgres_db}"
 db_properties = {
-    "user": "airflow",
-    "password": "airflow",
+    "user": postgres_user,
+    "password": postgres_password,
     "driver": "org.postgresql.Driver"
 }
 

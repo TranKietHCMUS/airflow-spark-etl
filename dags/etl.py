@@ -3,7 +3,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from airflow.utils.dates import days_ago
-from airflow.models import TaskInstance
 import requests
 
 from tasks.extract import extract
@@ -12,43 +11,46 @@ import os
 
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+rawzone_bucket_name = os.getenv("RAW_ZONE_BUCKET_NAME")
+goldenzone_bucket_name = os.getenv("GOLDEN_ZONE_BUCKET_NAME")
+postgres_user = os.getenv("POSTGRES_USER")
+postgres_password = os.getenv("POSTGRES_PASSWORD")
+postgres_db = os.getenv("POSTGRES_DB")
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 
-def send_telegram_message(context):
-    dag_run = context['dag_run']
-    dag_id = dag_run.dag_id
-    run_id = dag_run.run_id
-    
-    tasks = context['dag'].tasks
-    message = f"DAG {dag_id} - Run {run_id} status report:\n"
-    
-    for task in tasks:
-        task_instance = TaskInstance(task, dag_run.execution_date)
-        task_instance.refresh_from_db()
-        state = task_instance.state
-        message += f"- Task {task.task_id}: {state}\n"
-    
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+
+def send_message(task_id, status):
+    message = f"Task {task_id} has {status}."
     payload = {
         'chat_id': CHAT_ID,
         'text': message
     }
-    response = requests.post(url, data=payload)
-    
-    if response.status_code != 200:
-        raise Exception(f"Failed to send message to Telegram: {response.text}")
+    try:
+        response = requests.post(TELEGRAM_API_URL, data=payload)
+        if response.status_code == 200:
+            print(f"Message sent successfully: {message}")
+        else:
+            print(f"Failed to send message: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Error sending message: {e}")
 
-def finish():
-    print("Successfully!")
+def task_success_callback(context):
+    task_id = context['task_instance'].task_id
+    send_message(task_id, 'succeeded')
+
+def task_failure_callback(context):
+    task_id = context['task_instance'].task_id
+    send_message(task_id, 'failed')
 
 default_args = {
     'owner': 'trkiet',
     'retries': 3,
     'retry_delay': timedelta(minutes=2),
-    'on_success_callback': send_telegram_message,
-    'on_failure_callback': send_telegram_message 
+    'on_success_callback': task_success_callback,
+    'on_failure_callback': task_failure_callback 
 }
 
 with DAG (
@@ -78,7 +80,7 @@ with DAG (
         application="dags/tasks/transform.py",
         task_id="transform",
         conn_id="spark",
-        application_args=[aws_access_key_id, aws_secret_access_key, os.getenv("RAW_ZONE_BUCKET_NAME"), os.getenv("GOLDEN_ZONE_BUCKET_NAME")],
+        application_args=[aws_access_key_id, aws_secret_access_key, rawzone_bucket_name, goldenzone_bucket_name],
         total_executor_cores=2,
         executor_cores=2,
         executor_memory='1g',
@@ -90,7 +92,7 @@ with DAG (
         application="dags/tasks/load_db.py",
         task_id="load_to_db",
         conn_id="spark",
-        application_args=[aws_access_key_id, aws_secret_access_key],
+        application_args=[aws_access_key_id, aws_secret_access_key, postgres_user, postgres_password, postgres_db, goldenzone_bucket_name],
         total_executor_cores=2,
         executor_cores=2,
         executor_memory='1g',
@@ -102,9 +104,4 @@ with DAG (
         }
     )
 
-    finish_task = PythonOperator(
-        task_id='finish',
-        python_callable=finish
-    )
-
-    extract_task >> load_to_raw_zone_task >> transform_spark_job_task >> load_spark_job_task >> finish_task
+    extract_task >> load_to_raw_zone_task >> transform_spark_job_task >> load_spark_job_task
