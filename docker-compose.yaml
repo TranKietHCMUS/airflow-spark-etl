@@ -4,11 +4,6 @@ x-spark-common: &spark-common
   volumes:
     - ./dags/tasks:/opt/bitnami/spark/jobs
     - ./databases/postgres/jdbc:/libs/postgres
-  environment:
-    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    RAW_ZONE_BUCKET_NAME: ${RAW_ZONE_BUCKET_NAME}
-    GOLDEN_ZONE_BUCKET_NAME: ${GOLDEN_ZONE_BUCKET_NAME}
   networks:
     - airflow-network
 
@@ -32,6 +27,9 @@ x-airflow-common:
     GOLDEN_ZONE_BUCKET_NAME: ${GOLDEN_ZONE_BUCKET_NAME}
     BOT_TOKEN: ${BOT_TOKEN}
     CHAT_ID: ${CHAT_ID}
+    POSTGRES_USER: ${POSTGRES_USER}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    POSTGRES_DB: ${POSTGRES_DB}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -101,12 +99,12 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: airflow
       MYSQL_DATABASE: store
-      TIME_SLEEP: 300
-      INCREASE_CUSTOMERS: 5
-      INCREASE_PRODUCTS: 1
-      NUM_CUSTOMERS: 100
-      NUM_PRODUCTS: 30
-      NUM_ORDERS: 100
+      TIME_SLEEP: ${TIME_SLEEP}
+      INCREASE_CUSTOMERS: ${INCREASE_CUSTOMERS}
+      INCREASE_PRODUCTS: ${INCREASE_PRODUCTS}
+      NUM_CUSTOMERS: ${NUM_CUSTOMERS}
+      NUM_PRODUCTS: ${NUM_PRODUCTS}
+      NUM_ORDERS: ${NUM_ORDERS}
     ports:
       - 5000:5000
     networks:
@@ -139,8 +137,8 @@ services:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
       _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
-      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_WWW_USER_USERNAME}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_WWW_USER_PASSWORD}
   
   spark-master:
     <<: *spark-common
