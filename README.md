@@ -7,6 +7,7 @@
 - [Project Structure](#project-structure)
 - [Set Up](#set-up)
 - [Usage](#usage)
+- [Conclusion](#conclusion)
 
 ## Introduction
 This project focuses on building automated data pipelines using **Apache Airflow** to streamline the flow of data across various stages. The **Airflow DAG** consists of four key tasks that facilitate the extraction, transformation, and loading (ETL) of data:
