@@ -98,3 +98,7 @@ docker-compose up -d
     <img src="images/notify.jpg" width="600">
     <br/> <br/>
     <img src="images/result_postgre.jpg" width="600">
+
+## Conclusion
+This is my first time doing a project related to Apache Airflow. I spent some time learning how to use it and also created a simple project. <br/>
+Thank you for viewing my project.
