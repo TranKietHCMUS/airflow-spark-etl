@@ -9,10 +9,10 @@ x-spark-common: &spark-common
 
 x-airflow-common:
   &airflow-common
+  image: ${AIRFLOW_IMAGE_NAME:-airflow-spark}
   build:
     context: .
     dockerfile: Dockerfile
-  image: ${AIRFLOW_IMAGE_NAME:-airflow-spark}
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -102,6 +102,7 @@ services:
       TIME_SLEEP: ${TIME_SLEEP}
       INCREASE_CUSTOMERS: ${INCREASE_CUSTOMERS}
       INCREASE_PRODUCTS: ${INCREASE_PRODUCTS}
+      INCREASE_ORDERS: ${INCREASE_ORDERS}
       NUM_CUSTOMERS: ${NUM_CUSTOMERS}
       NUM_PRODUCTS: ${NUM_PRODUCTS}
       NUM_ORDERS: ${NUM_ORDERS}
