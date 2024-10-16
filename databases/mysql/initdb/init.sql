@@ -1,7 +1,6 @@
 USE store;
 
 CREATE TABLE customers (
-    index_col INT AUTO_INCREMENT UNIQUE,
     customer_id VARCHAR(36) PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
@@ -12,7 +11,6 @@ CREATE TABLE customers (
 );
 
 CREATE TABLE products (
-    index_col INT AUTO_INCREMENT UNIQUE,
     product_id VARCHAR(36) PRIMARY KEY,
     product_name VARCHAR(50),
     feature VARCHAR(50),
@@ -23,7 +21,6 @@ CREATE TABLE products (
 );
 
 CREATE TABLE orders (
-    index_col INT AUTO_INCREMENT UNIQUE,
     order_id VARCHAR(36) PRIMARY KEY,
     customer_id VARCHAR(36),
     product_id VARCHAR(36),

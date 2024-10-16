@@ -11,11 +11,7 @@ yesterday = today - timedelta(days=1)
 def extract_table(name, attributes):
     mysql_hook = MySqlHook(mysql_conn_id='mysql')
     
-    sql_query = f"""
-        SELECT * 
-        FROM {name}
-        ORDER BY index_col
-    """
+    sql_query = f"SELECT * FROM {name}"
     data = mysql_hook.get_records(sql_query)
 
     temp_df = pd.DataFrame(data, columns=attributes)
@@ -25,9 +21,9 @@ def extract_table(name, attributes):
 
 
 def extract():
-    customer_attributes = ['index_col', 'customer_id', 'first_name', 'last_name', 'age', 'gender', 'created_at', 'updated_at']
+    customer_attributes = ['customer_id', 'first_name', 'last_name', 'age', 'gender', 'created_at', 'updated_at']
     extract_table("customers", customer_attributes)
-    product_attributes = ['index_col', 'product_id', 'product_name', 'feature', 'target_audience', 'price', 'created_at', 'updated_at']
+    product_attributes = ['product_id', 'product_name', 'feature', 'target_audience', 'price', 'created_at', 'updated_at']
     extract_table("products", product_attributes)
-    order_attributes = ['index_col', 'order_id', 'customer_id', 'product_id', 'quantity', 'created_at', 'updated_at']
+    order_attributes = ['order_id', 'customer_id', 'product_id', 'quantity', 'created_at', 'updated_at']
     extract_table("orders", order_attributes)

@@ -115,7 +115,7 @@ try:
         customers += new_customers
         products += new_products
 
-        new_orders = generate_orders(customers, products, 10)
+        new_orders = generate_orders(customers, products, int(os.getenv("INCREASE_ORDERS")))
         orders += new_orders
 
         insert_sql(cursor, "customers", new_customers)
